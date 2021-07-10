@@ -1,28 +1,32 @@
 <script lang="ts">
   import DataTable from "./lib/DataTable.svelte";
   import JsonInput from "./lib/JsonInput.svelte";
-  import jsonUrl from "json-url"
+  import jsonUrl from "json-url";
   import testData from "../testData.json";
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
   let json: string; // JSON.stringify(testData, null, 2);
   let toolbarHeight: number;
   let mainHeight: number;
+  let mainWidth: number;
   let pagination = true;
-  let editData = false;
-  const codec = jsonUrl("lzw")
+  let editData = false;  const codec = jsonUrl("lzw");
 
   $: jsonParsed = parseJson(json);
 
   $: {
-    codec.compress(jsonParsed)
-      .then(encodedData => window.location.hash = "#" + encodedData)
+    codec
+      .compress({ json: jsonParsed })
+      .then((encodedData) => (window.location.hash = "#" + encodedData));
   }
 
   onMount(() => {
-    codec.decompress(window.location.hash.substring(0))
-      .then(decodedData => json = JSON.stringify(decodedData.data, null, 2))
-  })
+    codec
+      .decompress(window.location.hash.substring(0))
+      .then(
+        (decodedData) => (json = JSON.stringify(decodedData.json.data, null, 2))
+      );
+  });
 
   const parseJson = (json: string) => {
     try {
@@ -33,7 +37,7 @@ import { onMount } from "svelte";
   };
 </script>
 
-<main style="height: 100%;" bind:clientHeight={mainHeight}>
+<main style="height: 100%;" bind:clientHeight={mainHeight} bind:clientWidth={mainWidth}>
   {#if jsonParsed.data || editData}
     <div
       style="height: 50px; display: flex; justify-content: center; align-items: center; "
@@ -50,18 +54,20 @@ import { onMount } from "svelte";
     </div>
 
     {#if editData || jsonParsed.error}
-      <JsonInput bind:json={json} error={jsonParsed.error} />
+      <JsonInput bind:json error={jsonParsed.error} />
     {/if}
     <DataTable
       data={jsonParsed.data}
       jsonParseError={jsonParsed.error}
       {pagination}
       height={mainHeight - (toolbarHeight + 6)}
+      width={mainWidth}
     />
   {:else}
     <center>
       <h1 style="margin-top: 3rem; margin-bottom: 3rem;">JSON ➡️ Table</h1>
-      <JsonInput bind:json={json} error={jsonParsed.error} />
+      <button>Use dummy data</button>
+      <JsonInput bind:json error={jsonParsed.error} />
     </center>
   {/if}
 </main>

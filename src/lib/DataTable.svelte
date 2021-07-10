@@ -5,8 +5,10 @@
 	export let data: any[];
 	export let pagination: boolean;
 	export let height = 600;
+	export let width = 600;
 	export let jsonParseError: string;
 
+	let tableElement: HTMLElement
 	let tableError: string;
 	let tabulatorTable: any;
 
@@ -43,7 +45,7 @@
 		setTimeout(() => { // needs a little bit delay to make table div accessible directly after error
 			try {
 				const paginationConfig = pagination ? {
-					pagination: "local",
+					pagination: "local" as "local" | "remote",
 					height: height + "px",
 				} : {}
 
@@ -59,6 +61,9 @@
 					columns: extractColumns(data),
 					...paginationConfig,
 				});
+				if (pagination) {
+					tableElement.style.maxWidth = (width - 2) + "px";
+				}
 				console.log({tabulatorTable})
 			} catch (err) {
 				tableError = err;
@@ -71,7 +76,7 @@
 	{#if tableError}
 		<div style="color: red; margin-top: 1rem">{tableError}</div>
 	{:else}
-		<div id="table">no data yet</div>
+		<div id="table" bind:this={tableElement}>no data yet</div>
 	{/if}
 </center>
 
