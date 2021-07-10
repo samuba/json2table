@@ -2,30 +2,36 @@
   import DataTable from "./lib/DataTable.svelte";
   import JsonInput from "./lib/JsonInput.svelte";
   import jsonUrl from "json-url";
-  import testData from "../testData.json";
   import { onMount } from "svelte";
 
-  let json: string; // JSON.stringify(testData, null, 2);
+  let json: string;
   let toolbarHeight: number;
   let mainHeight: number;
   let mainWidth: number;
   let pagination = true;
-  let editData = false;  const codec = jsonUrl("lzw");
+  let editData = false;
+  let shareUrl = "";
+  const codec = jsonUrl("lzma");
 
   $: jsonParsed = parseJson(json);
 
   $: {
-    codec
-      .compress({ json: jsonParsed })
-      .then((encodedData) => (window.location.hash = "#" + encodedData));
+    if (jsonParsed.data) {
+      console.log("compr", jsonParsed);
+      codec.compress({ json: jsonParsed }).then((encodedData) => {
+        shareUrl = "#" + encodedData;
+        window.location.hash = shareUrl;
+      });
+    }
   }
 
   onMount(() => {
-    codec
-      .decompress(window.location.hash.substring(0))
-      .then(
-        (decodedData) => (json = JSON.stringify(decodedData.json.data, null, 2))
-      );
+    const encodedData = window.location.hash.substring(0);
+    if (!encodedData) return;
+    codec.decompress(encodedData).then((decodedData) => {
+      console.log("decoded from URL", decodedData);
+      json = JSON.stringify(decodedData.json.data, null, 2);
+    });
   });
 
   const parseJson = (json: string) => {
@@ -35,22 +41,35 @@
       return { data: undefined, error: error + "" };
     }
   };
+
+  const setDummyData = async () => {
+    const result = await fetch("movies.json");
+    json = await result.text();
+  };
 </script>
 
-<main style="height: 100%;" bind:clientHeight={mainHeight} bind:clientWidth={mainWidth}>
+<main
+  style="height: 100%;"
+  bind:clientHeight={mainHeight}
+  bind:clientWidth={mainWidth}
+>
   {#if jsonParsed.data || editData}
     <div
       style="height: 50px; display: flex; justify-content: center; align-items: center; "
       bind:clientHeight={toolbarHeight}
     >
+      {#if shareUrl}
+        <a href={shareUrl} style="">Link to this table</a>
+      {/if}
       <label for="editDataBox" style="margin-left: 1rem;">
         <input bind:checked={editData} type="checkbox" id="editDataBox" />
         Edit Data
       </label>
-      <label for="paginationBox" style="margin-left: 1rem;">
+      <!-- note enabled because can break page with big data sets
+        <label for="paginationBox" style="margin-left: 1rem;">
         <input bind:checked={pagination} type="checkbox" id="paginationBox" />
         Pagination
-      </label>
+      </label> -->
     </div>
 
     {#if editData || jsonParsed.error}
@@ -64,11 +83,17 @@
       width={mainWidth}
     />
   {:else}
-    <center>
-      <h1 style="margin-top: 3rem; margin-bottom: 3rem;">JSON ➡️ Table</h1>
-      <button>Use dummy data</button>
+    <div style="display: flex; flex-direction: column; align-items: stretch;">
+      <h1 style="margin-top: 3rem; margin-bottom: 3rem; text-align: center;">
+        JSON ➡️ Table
+      </h1>
       <JsonInput bind:json error={jsonParsed.error} />
-    </center>
+      <center>
+        <button on:click={setDummyData} style="align-self: stretch;"
+          >Use dummy data</button
+        >
+      </center>
+    </div>
   {/if}
 </main>
 

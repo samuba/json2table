@@ -52,7 +52,6 @@
 				if (tabulatorTable) tabulatorTable.destroy();
 				tabulatorTable = new Tabulator("#table", {
 					data,
-					// persistence:  true, // TODO: ? fetch users config from localstorage and save in url
 					resizableColumns: true,
 					movableColumns: true,
 					headerFilterPlaceholder: "filter...",
@@ -76,7 +75,9 @@
 	{#if tableError}
 		<div style="color: red; margin-top: 1rem">{tableError}</div>
 	{:else}
-		<div id="table" bind:this={tableElement}>no data yet</div>
+		<div id="table" bind:this={tableElement}>
+			Loading...
+		</div>
 	{/if}
 </center>
 
