@@ -1,15 +1,28 @@
 <script lang="ts">
   import DataTable from "./lib/DataTable.svelte";
   import JsonInput from "./lib/JsonInput.svelte";
+  import jsonUrl from "json-url"
   import testData from "../testData.json";
+import { onMount } from "svelte";
 
   let json: string; // JSON.stringify(testData, null, 2);
   let toolbarHeight: number;
   let mainHeight: number;
   let pagination = true;
   let editData = false;
+  const codec = jsonUrl("lzw")
 
   $: jsonParsed = parseJson(json);
+
+  $: {
+    codec.compress(jsonParsed)
+      .then(encodedData => window.location.hash = "#" + encodedData)
+  }
+
+  onMount(() => {
+    codec.decompress(window.location.hash.substring(0))
+      .then(decodedData => json = JSON.stringify(decodedData.data, null, 2))
+  })
 
   const parseJson = (json: string) => {
     try {

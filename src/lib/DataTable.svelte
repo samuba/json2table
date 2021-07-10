@@ -50,6 +50,7 @@
 				if (tabulatorTable) tabulatorTable.destroy();
 				tabulatorTable = new Tabulator("#table", {
 					data,
+					// persistence:  true, // TODO: ? fetch users config from localstorage and save in url
 					resizableColumns: true,
 					movableColumns: true,
 					headerFilterPlaceholder: "filter...",

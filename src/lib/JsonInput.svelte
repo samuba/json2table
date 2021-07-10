@@ -5,7 +5,7 @@
 
 <div style="padding-left: 1rem; padding-right: 1rem; margin-bottom: 1rem;">
     <textarea
-        placeholder="Paste JSON here"
+        placeholder="Paste JSON array here"
         bind:value={json}
         style="width: 100%; height: 12rem; resize: vertical;"
     />
