@@ -107,9 +107,14 @@
     />
   {:else}
     <div style="display: flex; flex-direction: column; align-items: stretch;">
-      <h1 style="margin-top: 3rem; margin-bottom: 3rem; text-align: center;">
+      <h1 style="margin-top: 3rem; text-align: center;">
         JSON ➡️ Table
       </h1>
+      <h4 style="text-align: center; margin-bottom: 3rem;">
+        Create an interactive spreadsheet table and share it with others. 
+        <br>
+        No data is ever stored on the server! ✨
+      </h4>
       <JsonInput bind:json error={jsonParsed.error} />
       <center>
         <button on:click={setDummyData} style="align-self: stretch;"
