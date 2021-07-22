@@ -10,28 +10,53 @@
   let mainWidth: number;
   let editData = false;
   let shareUrl = "";
+  let creatingUrl = false;
   const codec = jsonUrl("lzma");
 
   $: jsonParsed = parseJson(json);
 
-  $: {
-    if (jsonParsed.data) {
-      console.log("compr", jsonParsed);
-      codec.compress({ json: jsonParsed }).then((encodedData) => {
-        shareUrl = "#" + encodedData;
-        window.location.hash = shareUrl;
-      });
+  $: showTable = jsonParsed.data || editData
+
+  // poor mans router
+  const locationHashChanged = () => {
+    if (!window.location.hash) {
+      // start page
+      json = "";
+      shareUrl = ""
+    } 
+    else {
+      // table is shown with data from shareable link
+      loadDataFromLocationHash()
     }
   }
 
   onMount(() => {
+    loadDataFromLocationHash()
+  });
+
+  const loadDataFromLocationHash = () => {
     const encodedData = window.location.hash.substring(0);
     if (!encodedData) return;
+
+    // site was opened via sharable url
+    shareUrl = window.location.hash;
     codec.decompress(encodedData).then((decodedData) => {
       console.log("decoded from URL", decodedData);
       json = JSON.stringify(decodedData.json.data, null, 2);
     });
-  });
+  }
+
+  const createShareUrl = () => {
+    creatingUrl = true;
+    codec.compress({ json: jsonParsed }).then((encodedData) => {
+      shareUrl = "#" + encodedData;
+      window.location.hash = shareUrl;
+      creatingUrl = false
+    }).catch(err => {
+      creatingUrl = false
+      console.error("Could not create sharable url", err)
+    });
+  }
 
   const parseJson = (json: string) => {
     try {
@@ -52,13 +77,17 @@
   bind:clientHeight={mainHeight}
   bind:clientWidth={mainWidth}
 >
-  {#if jsonParsed.data || editData}
+  {#if showTable}
     <div
       style="height: 50px; display: flex; justify-content: center; align-items: center; "
       bind:clientHeight={toolbarHeight}
     >
       {#if shareUrl}
         <a href={shareUrl} style="">Link to this table</a>
+      {:else}
+        <button on:click={createShareUrl} disabled={creatingUrl} title="No data is saved on any servers!">
+          {creatingUrl ? "Creating permanent link..." : "Create permanent link to this table"}
+        </button>
       {/if}
       <label for="editDataBox" style="margin-left: 1rem;">
         <input bind:checked={editData} type="checkbox" id="editDataBox" />
@@ -90,6 +119,8 @@
     </div>
   {/if}
 </main>
+
+<svelte:window on:hashchange={locationHashChanged}/>
 
 <style>
   :global(body) {

@@ -9,3 +9,5 @@ Convert JSON data to an interactive data table. Share the table easily just by c
     - service worker
     - on demand button
 [] get rid of spacing at the botom
+[] center small tables
+[] detect when source json has been edited and discard shareable link
