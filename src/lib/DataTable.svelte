@@ -71,7 +71,7 @@
 	};
 </script>
 
-<center>
+<div>
 	{#if tableError}
 		<div style="color: red; margin-top: 1rem">{tableError}</div>
 	{:else}
@@ -79,5 +79,5 @@
 			Loading...
 		</div>
 	{/if}
-</center>
+</div>
 

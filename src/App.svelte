@@ -8,7 +8,6 @@
   let toolbarHeight: number;
   let mainHeight: number;
   let mainWidth: number;
-  let pagination = true;
   let editData = false;
   let shareUrl = "";
   const codec = jsonUrl("lzma");
@@ -65,11 +64,6 @@
         <input bind:checked={editData} type="checkbox" id="editDataBox" />
         Edit Data
       </label>
-      <!-- note enabled because can break page with big data sets
-        <label for="paginationBox" style="margin-left: 1rem;">
-        <input bind:checked={pagination} type="checkbox" id="paginationBox" />
-        Pagination
-      </label> -->
     </div>
 
     {#if editData || jsonParsed.error}
@@ -78,7 +72,7 @@
     <DataTable
       data={jsonParsed.data}
       jsonParseError={jsonParsed.error}
-      {pagination}
+      pagination={true}
       height={mainHeight - (toolbarHeight + 6)}
       width={mainWidth}
     />
