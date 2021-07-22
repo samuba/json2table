@@ -17,15 +17,24 @@
 		buildTable(data, pagination, height);
 	}
 
+	const extractFormatter = (val: any) => {
+		if (typeof val == "string") {
+			if (val.startsWith("https://") || val.startsWith("http://")) {
+				return "link"
+			}
+		}
+	}
+
 	const extractColumns = (data: any[]) => {
 		// extract columns from every entry 
 		// because we do not know if every entry has every field
 		const colObj = data.reduce((prev, curr) => {
-			Object.entries(curr).forEach(([key, _]) => {
+			Object.entries(curr).forEach(([key, val]) => {
 				prev[key] = {
 					title: key.toUpperCase(),
 					field: key,
 					headerFilter:"input", 
+					formatter: extractFormatter(val)
 				};
 			});
 			return prev;
