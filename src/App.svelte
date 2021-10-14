@@ -26,7 +26,7 @@
       return;
     }
     if (!window.location.hash) {
-      // start page
+      // the start page
       json = "";
       shareUrl = "";
     } else {
