@@ -11,27 +11,32 @@
   let editData = false;
   let shareUrl = "";
   let creatingUrl = false;
+  let title = "";
+  let doNotNavigateOnHashChange = false;
   const codec = jsonUrl("lzma");
 
   $: jsonParsed = parseJson(json);
 
-  $: showTable = jsonParsed.data || editData
+  $: showTable = jsonParsed.data || editData;
 
   // poor mans router
   const locationHashChanged = () => {
+    if (doNotNavigateOnHashChange) {
+      doNotNavigateOnHashChange = false;
+      return;
+    }
     if (!window.location.hash) {
       // start page
       json = "";
-      shareUrl = ""
-    } 
-    else {
+      shareUrl = "";
+    } else {
       // table is shown with data from shareable link
-      loadDataFromLocationHash()
+      loadDataFromLocationHash();
     }
-  }
+  };
 
   onMount(() => {
-    loadDataFromLocationHash()
+    loadDataFromLocationHash();
   });
 
   const loadDataFromLocationHash = () => {
@@ -43,20 +48,30 @@
     codec.decompress(encodedData).then((decodedData) => {
       console.log("decoded from URL", decodedData);
       json = JSON.stringify(decodedData.json.data, null, 2);
+      title = decodedData.title;
     });
-  }
+  };
 
   const createShareUrl = () => {
     creatingUrl = true;
-    codec.compress({ json: jsonParsed }).then((encodedData) => {
-      shareUrl = "#" + encodedData;
-      window.location.hash = shareUrl;
-      creatingUrl = false
-    }).catch(err => {
-      creatingUrl = false
-      console.error("Could not create sharable url", err)
-    });
-  }
+    codec
+      .compress({ json: jsonParsed, title })
+      .then((encodedData) => {
+        shareUrl = "#" + encodedData;
+        window.location.hash = shareUrl;
+        creatingUrl = false;
+      })
+      .catch((err) => {
+        creatingUrl = false;
+        console.error("Could not create sharable url", err);
+      });
+  };
+
+  const clearShareUrl = () => {
+    shareUrl = "";
+    doNotNavigateOnHashChange = true;
+    window.location.hash = "";
+  };
 
   const parseJson = (json: string) => {
     try {
@@ -79,24 +94,41 @@
 >
   {#if showTable}
     <div
-      style="height: 50px; display: flex; justify-content: center; align-items: center; "
+      style="height: 2.5rem; display: flex; justify-content: space-between; align-items: center; "
       bind:clientHeight={toolbarHeight}
     >
-      {#if shareUrl}
-        <a href={shareUrl} style="">Link to this table</a>
-      {:else}
-        <button on:click={createShareUrl} disabled={creatingUrl} title="No data is saved on any servers!">
-          {creatingUrl ? "Creating permanent link..." : "Create permanent link to this table"}
-        </button>
-      {/if}
-      <label for="editDataBox" style="margin-left: 1rem;">
-        <input bind:checked={editData} type="checkbox" id="editDataBox" />
-        Edit Data
-      </label>
+      <div style="margin-left: 1rem;">
+        <h1 style="font-size: 1rem;">{title}</h1>
+      </div>
+
+      <div style="margin-right: 1rem;">
+        {#if shareUrl}
+          <a href={shareUrl} target="_blank" style="">Link to this table</a>
+        {:else}
+          <button
+            on:click={createShareUrl}
+            disabled={creatingUrl}
+            title="No data is saved on any servers!"
+          >
+            {creatingUrl
+              ? "Creating permanent link..."
+              : "Create permanent link to this table"}
+          </button>
+        {/if}
+        <label for="editDataBox" style="margin-left: 1rem;">
+          <input bind:checked={editData} type="checkbox" id="editDataBox" />
+          Edit
+        </label>
+      </div>
     </div>
 
     {#if editData || jsonParsed.error}
-      <JsonInput bind:json error={jsonParsed.error} />
+      <JsonInput
+        bind:json
+        bind:title
+        error={jsonParsed.error}
+        on:inputChanged={clearShareUrl}
+      />
     {/if}
     <DataTable
       data={jsonParsed.data}
@@ -107,25 +139,23 @@
     />
   {:else}
     <div style="display: flex; flex-direction: column; align-items: stretch;">
-      <h1 style="margin-top: 3rem; text-align: center;">
-        JSON ➡️ Table
-      </h1>
+      <h1 style="margin-top: 3rem; text-align: center;">JSON ➡️ Table</h1>
       <h4 style="text-align: center; margin-bottom: 3rem;">
-        Create an interactive spreadsheet table and share it with others. 
-        <br>
+        Create an interactive spreadsheet table and share it with others.
+        <br />
         No data is ever stored on the server! ✨
       </h4>
-      <JsonInput bind:json error={jsonParsed.error} />
+      <JsonInput bind:json bind:title error={jsonParsed.error} />
       <center>
-        <button on:click={setDummyData} style="align-self: stretch;"
-          >Use dummy data</button
-        >
+        <button on:click={setDummyData} style="align-self: stretch;">
+          Use dummy data
+        </button>
       </center>
     </div>
   {/if}
 </main>
 
-<svelte:window on:hashchange={locationHashChanged}/>
+<svelte:window on:hashchange={locationHashChanged} />
 
 <style>
   :global(body) {
