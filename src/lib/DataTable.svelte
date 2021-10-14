@@ -8,7 +8,7 @@
 	export let width = 600;
 	export let jsonParseError: string;
 
-	let tableElement: HTMLElement
+	let tableElement: HTMLElement;
 	let tableError: string;
 	let tabulatorTable: any;
 
@@ -20,21 +20,21 @@
 	const extractFormatter = (val: any) => {
 		if (typeof val == "string") {
 			if (val.startsWith("https://") || val.startsWith("http://")) {
-				return "link"
+				return "link";
 			}
 		}
-	}
+	};
 
 	const extractColumns = (data: any[]) => {
-		// extract columns from every entry 
+		// extract columns from every entry
 		// because we do not know if every entry has every field
 		const colObj = data.reduce((prev, curr) => {
 			Object.entries(curr).forEach(([key, val]) => {
 				prev[key] = {
 					title: key.toUpperCase(),
 					field: key,
-					headerFilter:"input", 
-					formatter: extractFormatter(val)
+					headerFilter: "input",
+					formatter: extractFormatter(val),
 				};
 			});
 			return prev;
@@ -47,16 +47,19 @@
 
 	const buildTable = (data: any[], pagination: boolean, height: number) => {
 		if (jsonParseError) {
-			tabulatorTable.destroy()
+			tabulatorTable.destroy();
 			return;
 		}
 		tableError = undefined;
-		setTimeout(() => { // needs a little bit delay to make table div accessible directly after error
+		setTimeout(() => {
+			// needs a little bit delay to make table div accessible directly after error
 			try {
-				const paginationConfig = pagination ? {
-					pagination: "local" as "local" | "remote",
-					height: height + "px",
-				} : {}
+				const paginationConfig = pagination
+					? {
+							pagination: "local" as "local" | "remote",
+							height: height + "px",
+					  }
+					: {};
 
 				if (tabulatorTable) tabulatorTable.destroy();
 				tabulatorTable = new Tabulator("#table", {
@@ -70,9 +73,9 @@
 					...paginationConfig,
 				});
 				if (pagination) {
-					tableElement.style.maxWidth = (width - 2) + "px";
+					tableElement.style.maxWidth = width - 2 + "px";
 				}
-				console.log({tabulatorTable})
+				console.log({ tabulatorTable });
 			} catch (err) {
 				tableError = err;
 			}
@@ -84,9 +87,18 @@
 	{#if tableError}
 		<div style="color: red; margin-top: 1rem">{tableError}</div>
 	{:else}
-		<div id="table" bind:this={tableElement}>
-			Loading...
-		</div>
+		<div id="table" bind:this={tableElement}>Loading...</div>
 	{/if}
 </center>
 
+<style>
+	:global(.tabulator-tableHolder) {
+		min-height: calc(100% - 79px) !important;
+		height: calc(100% - 79) !important;
+		max-height: calc(100% - 79) !important;
+	}
+
+	#table {
+		border-bottom: 0 !important;
+	}
+</style>

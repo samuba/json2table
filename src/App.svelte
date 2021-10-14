@@ -88,7 +88,7 @@
 </script>
 
 <main
-  style="height: 100%;"
+  style="height: 100%; width: 100%;"
   bind:clientHeight={mainHeight}
   bind:clientWidth={mainWidth}
 >
@@ -134,7 +134,7 @@
       data={jsonParsed.data}
       jsonParseError={jsonParsed.error}
       pagination={true}
-      height={mainHeight - (toolbarHeight + 6)}
+      height={mainHeight - (toolbarHeight + 5)}
       width={mainWidth}
     />
   {:else}
