@@ -83,7 +83,7 @@
 	};
 </script>
 
-<center>
+<center style="background-color: #e6e6e6;">
 	{#if tableError}
 		<div style="color: red; margin-top: 1rem">{tableError}</div>
 	{:else}
