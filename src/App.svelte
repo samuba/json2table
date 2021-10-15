@@ -49,6 +49,7 @@
       console.log("decoded from URL", decodedData);
       json = JSON.stringify(decodedData.json.data, null, 2);
       title = decodedData.title;
+      document.title = decodedData.title;
     });
   };
 
